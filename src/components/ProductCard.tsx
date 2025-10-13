@@ -1,45 +1,41 @@
 import { Link } from "react-router-dom";
 import { Product } from "@/lib/products";
-import { Badge } from "./ui/badge";
 
-interface ProductCardProps {
-  product: Product;
-}
+interface ProductCardProps { product: Product }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   return (
-    <Link 
-      to={`/product/${product.id}`}
-      className="group block"
-    >
-      <div className="relative overflow-hidden rounded-4 bg-card border aspect-square mb-4">
-        {/* 444 Badge */}
-        <div className="absolute top-3 right-3 z-10">
-          <Badge className="badge-444 bg-gold text-gold-foreground font-bold text-xs">
-            444
-          </Badge>
+<Link to={`/product/${product.id}`} className="group block pb-6 md:pb-8">
+
+      {/* larger canvas, object-contain, no borders */}
+
+<div className="relative bg-[#E8E9DA] overflow-hidden mb-1">
+  {/* 3:2 + 48px */}
+  <div aria-hidden style={{ paddingTop: "calc(66.666% + 72px)" }} />
+  <img
+    src={product.images[0]}
+    alt={product.name}
+    className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.01]"
+  />
+  {!product.inStock && (
+    <div className="absolute inset-0 bg-white/85 flex items-center justify-center">
+      <span className="text-xs font-semibold tracking-wider">OUT OF STOCK</span>
+    </div>
+  )}
+</div>
+
+
+      {/* tighter meta, a touch bigger */}
+     <div className="text-center space-y-0">
+        <div className="text-[11px] tracking-[0.22em] text-neutral-500 uppercase">
+          Soulfly
         </div>
-
-        {/* Product Image */}
-        <img
-          src={product.images[0]}
-          alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-
-        {/* Out of Stock Overlay */}
-        {!product.inStock && (
-          <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-            <span className="text-sm font-semibold">OUT OF STOCK</span>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-1">
-        <h3 className="font-semibold text-sm group-hover:text-gold transition-colors">
+        <h3 className="text-lg md:text-xl leading-tight">
           {product.name}
         </h3>
-        <p className="text-sm text-muted-foreground">${product.price}</p>
+        <p className="text-base md:text-lg text-neutral-900">
+          ${product.price.toFixed(2)} USD
+        </p>
       </div>
     </Link>
   );

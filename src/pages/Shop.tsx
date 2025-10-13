@@ -14,19 +14,13 @@ const Shop = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
 
-  const categories = Array.from(new Set(products.map(p => p.category)));
-  const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+  const categories = Array.from(new Set(products.map((p) => p.category)));
+  const sizes = ["S", "M", "L", "XL", "XXL"];
 
-  const filteredProducts = products.filter(product => {
-    if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
-      return false;
-    }
-    if (selectedSizes.length > 0 && !product.sizes.some(s => selectedSizes.includes(s))) {
-      return false;
-    }
-    if (inStockOnly && !product.inStock) {
-      return false;
-    }
+  const filteredProducts = products.filter((product) => {
+    if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) return false;
+    if (selectedSizes.length > 0 && !product.sizes.some((s: string) => selectedSizes.includes(s))) return false;
+    if (inStockOnly && !product.inStock) return false;
     return true;
   });
 
@@ -36,7 +30,7 @@ const Shop = () => {
       <div>
         <h3 className="font-semibold mb-3">Category</h3>
         <div className="space-y-2">
-          {categories.map(category => (
+          {categories.map((category) => (
             <div key={category} className="flex items-center space-x-2">
               <Checkbox
                 id={`cat-${category}`}
@@ -45,7 +39,7 @@ const Shop = () => {
                   if (checked) {
                     setSelectedCategories([...selectedCategories, category]);
                   } else {
-                    setSelectedCategories(selectedCategories.filter(c => c !== category));
+                    setSelectedCategories(selectedCategories.filter((c) => c !== category));
                   }
                 }}
               />
@@ -61,7 +55,7 @@ const Shop = () => {
       <div>
         <h3 className="font-semibold mb-3">Size</h3>
         <div className="space-y-2">
-          {sizes.map(size => (
+          {sizes.map((size) => (
             <div key={size} className="flex items-center space-x-2">
               <Checkbox
                 id={`size-${size}`}
@@ -70,7 +64,7 @@ const Shop = () => {
                   if (checked) {
                     setSelectedSizes([...selectedSizes, size]);
                   } else {
-                    setSelectedSizes(selectedSizes.filter(s => s !== size));
+                    setSelectedSizes(selectedSizes.filter((s) => s !== size));
                   }
                 }}
               />
@@ -116,60 +110,62 @@ const Shop = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1 pattern-444">
         <div className="container px-4 py-12 relative z-10">
-          {/* Header */}
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Shop All</h1>
-              <p className="text-muted-foreground">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-              </p>
+          <div className="mx-auto max-w-6xl">
+            {/* Header row */}
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold mb-2">Shop All</h1>
+                <p className="text-muted-foreground">
+                  {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
+                </p>
+              </div>
+
+              {/* Mobile Filters */}
+              <Sheet>
+                <SheetTrigger asChild className="lg:hidden">
+                  <Button variant="outline">
+                    <SlidersHorizontal className="mr-2 h-4 w-4" />
+                    Filters
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <FilterPanel />
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
 
-            {/* Mobile Filter Button */}
-            <Sheet>
-              <SheetTrigger asChild className="lg:hidden">
-                <Button variant="outline">
-                  <SlidersHorizontal className="mr-2 h-4 w-4" />
-                  Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Filters</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6">
+            {/* Main Content */}
+            <div className="flex gap-8">
+              {/* Desktop Filters hidden to keep wide product rows */}
+              <aside className="hidden w-64 shrink-0">
+                <div className="sticky top-24">
+                  <h2 className="text-lg font-semibold mb-4">Filters</h2>
                   <FilterPanel />
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+              </aside>
 
-          {/* Main Content */}
-          <div className="flex gap-8">
-            {/* Desktop Filters */}
-            <aside className="hidden lg:block w-64 shrink-0">
-              <div className="sticky top-24">
-                <h2 className="text-lg font-semibold mb-4">Filters</h2>
-                <FilterPanel />
-              </div>
-            </aside>
-
-            {/* Products Grid */}
-            <div className="flex-1">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-
-              {filteredProducts.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No products found matching your filters.</p>
+              {/* Products Grid */}
+              <div className="flex-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-16">
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
                 </div>
-              )}
+
+                {filteredProducts.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">No products found matching your filters.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

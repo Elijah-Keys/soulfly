@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -206,4 +205,21 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+:root {
+  /* Primary brand = #00C853 (HSL ~ 145, 100%, 39%) */
+  --primary: 145 100% 39%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 145 100% 39%;
+}
+
+/* Optional: ensure any legacy utilities still map to green */
+.text-gold        { color: #00C853; }
+.bg-gold          { background-color: #00C853; }
+.border-gold      { border-color: #00C853; }
+.hover\:text-gold:hover   { color: #00C853; }
+.hover\:bg-gold:hover     { background-color: #00C853; }
+.hover\:border-gold:hover { border-color: #00C853; }
+.focus-visible\:ring-gold:focus-visible {
+  --tw-ring-color: #00C853 !important;
 }

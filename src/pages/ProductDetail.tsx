@@ -3,24 +3,26 @@ import { useParams, Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/lib/cart-store";
 import { getProductById } from "@/lib/products";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Truck, RotateCcw, Shield } from "lucide-react";
+import { useEffect } from "react";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = getProductById(id || '');
-  const [selectedSize, setSelectedSize] = useState<string>('');
+  const product = getProductById(id || "");
+  const [selectedSize, setSelectedSize] = useState<string>("");
   const { addItem } = useCart();
   const { toast } = useToast();
-
+useEffect(() => {
+  window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+}, []);
   if (!product) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-[#E8E9DF]">
         <Header />
-        <main className="flex-1 flex items-center justify-center">
+        <main className="flex-1 bg-[#E8E9DF] flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
             <Link to="/shop">
@@ -35,13 +37,9 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      toast({
-        title: "Please select a size",
-        variant: "destructive",
-      });
+      toast({ title: "Please select a size", variant: "destructive" });
       return;
     }
-
     addItem({
       productId: product.id,
       name: product.name,
@@ -50,82 +48,76 @@ const ProductDetail = () => {
       quantity: 1,
       image: product.images[0],
     });
-
-    toast({
-      title: "Added to cart",
-      description: `${product.name} (${selectedSize}) added to your cart.`,
-    });
+    toast({ title: "Added to cart", description: `${product.name} (${selectedSize}) added to your cart.` });
   };
 
   const inventory = product.inventory[selectedSize] || 0;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#E8E9DF]">{/* CHANGED */}
       <Header />
-      
-      <main className="flex-1">
-        <div className="container px-4 py-12">
+
+      <main className="flex-1 bg-[#E8E9DF]">{/* CHANGED */}
+        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-10 md:py-16">
           {/* Breadcrumb */}
-          <div className="mb-8 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-foreground">Home</Link>
-            {' / '}
-            <Link to="/shop" className="hover:text-foreground">Shop</Link>
-            {' / '}
-            <span className="text-foreground">{product.name}</span>
+          <div className="mb-8 text-sm text-neutral-500">
+            <Link to="/" className="hover:text-neutral-900">Home</Link>
+            {" / "}
+            <Link to="/shop" className="hover:text-neutral-900">Shop</Link>
+            {" / "}
+            <span className="text-neutral-900">{product.name}</span>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Product Images */}
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-start">
+            {/* Image */}
             <div>
-              <div className="relative aspect-square rounded-4 overflow-hidden bg-card border mb-4">
-                <Badge className="absolute top-4 right-4 z-10 badge-444 bg-gold text-gold-foreground">
-                  444
-                </Badge>
+              <div className="relative bg-[#E8E9DF] overflow-hidden aspect-[4/3]">
                 <img
                   src={product.images[0]}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-contain"
                 />
               </div>
             </div>
 
-            {/* Product Info */}
+            {/* Info */}
             <div>
-              <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-              <p className="text-3xl font-semibold mb-6">${product.price}</p>
-              
-              <p className="text-muted-foreground mb-8 leading-relaxed">
+              <div className="text-[11px] tracking-[0.22em] text-neutral-500 uppercase mb-3">
+                Soulfly
+              </div>
+
+              <h1 className="text-4xl md:text-5xl font-semibold leading-tight mb-4">
+                {product.name}
+              </h1>
+
+              <p className="text-2xl md:text-3xl font-medium mb-8">
+                ${product.price.toFixed(2)} USD
+              </p>
+
+              <p className="text-neutral-600 mb-10 leading-relaxed">
                 {product.description}
               </p>
 
-              {/* Size Selection */}
-              <div className="mb-6">
+              {/* Sizes */}
+              <div className="mb-8">
                 <div className="flex items-center justify-between mb-3">
                   <label className="font-semibold">Select Size</label>
                   {selectedSize && (
-                    <span className="text-sm text-muted-foreground">
-                      {inventory} in stock
-                    </span>
+                    <span className="text-sm text-neutral-500">{inventory} in stock</span>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  {product.sizes.map(size => {
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size) => {
                     const stock = product.inventory[size] || 0;
                     const isAvailable = stock > 0;
-                    
                     return (
                       <button
                         key={size}
                         onClick={() => isAvailable && setSelectedSize(size)}
                         disabled={!isAvailable}
-                        className={`
-                          px-4 py-2 border rounded-4 font-medium transition-all
-                          ${selectedSize === size 
-                            ? 'border-gold bg-gold text-gold-foreground' 
-                            : 'border-border hover:border-gold'
-                          }
-                          ${!isAvailable && 'opacity-30 cursor-not-allowed line-through'}
-                        `}
+                        className={`px-4 py-2 border border-neutral-300 rounded-none text-sm tracking-wide transition-colors
+                          ${selectedSize === size ? "bg-[#00C853] text-white" : "hover:bg-neutral-100"}
+                          ${!isAvailable ? "opacity-30 cursor-not-allowed line-through" : ""}`}
                       >
                         {size}
                       </button>
@@ -134,65 +126,63 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Add to Cart */}
+              {/* Add to cart */}
               <Button
                 size="lg"
-                className="w-full btn-444 mb-8"
+                className="w-full rounded-none bg-[#00C853] text-white hover:bg-white hover:text-black hover:border hover:border-black transition-colors mb-10"
                 onClick={handleAddToCart}
                 disabled={!product.inStock}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                {product.inStock ? "Add to Cart" : "Out of Stock"}
               </Button>
 
-              {/* Features */}
-              <div className="space-y-4 border-t pt-6">
+              {/* Minimal feature list */}
+              <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Truck className="h-5 w-5 text-gold mt-0.5" />
+                  <Truck className="h-5 w-5 text-neutral-700 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold mb-1">Free Shipping</h3>
-                    <p className="text-sm text-muted-foreground">On orders over $100</p>
+                    <h3 className="font-semibold mb-1">Free shipping over $100</h3>
+                    <p className="text-sm text-neutral-500">Standard and express available</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <RotateCcw className="h-5 w-5 text-gold mt-0.5" />
+                  <RotateCcw className="h-5 w-5 text-neutral-700 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold mb-1">Easy Returns</h3>
-                    <p className="text-sm text-muted-foreground">30-day return policy</p>
+                    <h3 className="font-semibold mb-1">30 day returns</h3>
+                    <p className="text-sm text-neutral-500">Items must be unworn with tags</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Shield className="h-5 w-5 text-gold mt-0.5" />
+                  <Shield className="h-5 w-5 text-neutral-700 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold mb-1">Authenticity Guaranteed</h3>
-                    <p className="text-sm text-muted-foreground">100% genuine products</p>
+                    <h3 className="font-semibold mb-1">Authenticity</h3>
+                    <p className="text-sm text-neutral-500">Designed by Soulfly</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Product Details Tabs */}
-          <div className="mt-16 border-t pt-8">
-            <div className="grid md:grid-cols-3 gap-8">
-              <div>
-                <h3 className="font-semibold mb-3">Care Instructions</h3>
-                <p className="text-sm text-muted-foreground">
-                  Machine wash cold with like colors. Tumble dry low. Do not bleach. Iron on low heat if needed.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">Shipping Info</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ships within 1-2 business days. Free shipping on orders over $100. Express shipping available.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">Returns</h3>
-                <p className="text-sm text-muted-foreground">
-                  30-day return policy. Items must be unworn, unwashed, and in original packaging with tags attached.
-                </p>
-              </div>
+          {/* Info blocks */}
+          <div className="mt-20 grid md:grid-cols-3 gap-10">
+            <div>
+              <h3 className="font-semibold mb-3">Care</h3>
+              <p className="text-sm text-neutral-500">
+                Machine wash cold with like colors. Tumble dry low. Do not bleach.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3">Shipping</h3>
+              <p className="text-sm text-neutral-500">
+                Ships in 1 to 2 business days. Free shipping over $100.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3">Returns</h3>
+              <p className="text-sm text-neutral-500">
+                30 day returns. Items must be unworn and in original packaging.
+              </p>
             </div>
           </div>
         </div>

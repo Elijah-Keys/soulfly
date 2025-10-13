@@ -3,16 +3,16 @@ import { Footer } from "@/components/Footer";
 
 const Terms = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#E8E9DF] text-black">
       <Header />
-      <main className="flex-1 container px-4 py-12">
-        <div className="max-w-3xl mx-auto prose prose-neutral dark:prose-invert">
+      <main className="flex-1 container px-4 pb-12 pt-[72px]">
+        <div className="max-w-3xl mx-auto prose prose-neutral">
           <h1>Terms of Service</h1>
           <p className="text-sm text-muted-foreground">Last updated: January 2024</p>
-          
+
           <h2>Agreement to Terms</h2>
           <p>By accessing and using Soulfly's website and services, you agree to be bound by these Terms of Service and all applicable laws and regulations.</p>
-          
+
           <h2>Use License</h2>
           <p>Permission is granted to temporarily download one copy of materials on Soulfly's website for personal, non-commercial transitory viewing only.</p>
 
@@ -49,7 +49,10 @@ const Terms = () => {
           <p>We reserve the right to modify these terms at any time. Changes will be effective immediately upon posting to the website.</p>
 
           <h2>Contact</h2>
-          <p>For questions about these Terms, contact us at <a href="mailto:444soulfly.co@gmail.com">444soulfly.co@gmail.com</a></p>
+          <p>
+            For questions about these Terms, contact us at{" "}
+            <a href="mailto:444soulfly.co@gmail.com">444soulfly.co@gmail.com</a>
+          </p>
         </div>
       </main>
       <Footer />

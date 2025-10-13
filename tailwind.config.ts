@@ -13,6 +13,14 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+    streetwear: ['"Bebas Neue"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+    anti: ['"Rubik Wet Paint"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+    calligraphy: ['"Great Vibes"', 'cursive'],
+  allura: ['"Allura"', 'cursive'],
+  dancing: ['"Dancing Script"', 'cursive'],
+},
+
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

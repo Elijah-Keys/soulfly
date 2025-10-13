@@ -40,3 +40,37 @@
 .read-the-docs {
   color: #888;
 }
+:root{
+  --bg:#ffffff; --ink:#111111; --muted:#6b7280; --accent:#f5b800; /* 444 gold */
+  --radius:14px; --gap:24px; --sectionY:80px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Arial}
+h1,h2,h3{margin:0 0 12px 0; line-height:1.1}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+.btn{display:inline-block;padding:12px 22px;border-radius:999px;background:#111;color:#fff;font-weight:700;letter-spacing:.02em}
+/* Sitewide page background */
+html, body, #root {
+  background-color: #E8E9DA;
+}
+:root {
+  --background: 64 25% 88%; /* #E8E9DA as HSL */
+  --card: 64 25% 88%;
+}
+:root {
+  /* Primary brand = #00C853 (HSL ~ 145, 100%, 39%) */
+  --primary: 145 100% 39%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 145 100% 39%;
+}
+
+/* Optional: ensure any legacy utilities still map to green */
+.text-gold        { color: #00C853; }
+.bg-gold          { background-color: #00C853; }
+.border-gold      { border-color: #00C853; }
+.hover\:text-gold:hover   { color: #00C853; }
+.hover\:bg-gold:hover     { background-color: #00C853; }
+.hover\:border-gold:hover { border-color: #00C853; }
+.focus-visible\:ring-gold:focus-visible {
+  --tw-ring-color: #00C853 !important;
+}

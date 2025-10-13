@@ -17,6 +17,7 @@ import Terms from "./pages/policies/Terms";
 import Privacy from "./pages/policies/Privacy";
 import NotFound from "./pages/NotFound";
 
+
 const queryClient = new QueryClient();
 
 const App = () => (

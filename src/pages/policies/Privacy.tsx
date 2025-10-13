@@ -3,13 +3,15 @@ import { Footer } from "@/components/Footer";
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#E8E9DF]">
       <Header />
-      <main className="flex-1 container px-4 py-12">
+
+   <main className="flex-1 container px-4 pb-12 pt-[72px] bg-[#E8E9DF]">
+
         <div className="max-w-3xl mx-auto prose prose-neutral dark:prose-invert">
           <h1>Privacy Policy</h1>
           <p className="text-sm text-muted-foreground">Last updated: January 2024</p>
-          
+
           <h2>Information We Collect</h2>
           <p>We collect information that you provide directly to us, including:</p>
           <ul>
@@ -63,9 +65,13 @@ const Privacy = () => {
           <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page.</p>
 
           <h2>Contact Us</h2>
-          <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:444soulfly.co@gmail.com">444soulfly.co@gmail.com</a></p>
+          <p>
+            If you have questions about this Privacy Policy, please contact us at{" "}
+            <a href="mailto:444soulfly.co@gmail.com">444soulfly.co@gmail.com</a>
+          </p>
         </div>
       </main>
+
       <Footer />
     </div>
   );
