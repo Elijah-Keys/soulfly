@@ -2,16 +2,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { ProductCard } from "@/components/ProductCard";
+
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { InstagramFeed } from "@/components/InstagramFeed";
-import { getFeaturedProducts, products } from "@/lib/products";
+
 import heroImage from "@/assets/hero-soulfly.jpg";
+import ShopGrid from "@/components/ShopGrid";
+
 
 const Index = () => {
-  const featuredProducts = getFeaturedProducts();
-  const [showAll, setShowAll] = useState(false);
-  const visibleProducts = showAll ? products : featuredProducts;
 
   const scrollToShop = () => {
     const el = document.getElementById("shop");
@@ -98,8 +97,9 @@ const Index = () => {
   {/* Heading with normal gutters */}
   <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 mb-6">
     <h2 className="text-2xl md:text-3xl font-semibold tracking-wide uppercase">
-      {showAll ? "All Products" : "All Products"}
-    </h2>
+  All Products
+</h2>
+
     <p className="text-neutral-500 mt-2">Studio grade essentials</p>
   </div>
 
@@ -115,34 +115,13 @@ const Index = () => {
     }}
   >
 {/* Grid wrapper: full width with 16px side padding, middle gap unchanged */}
+{/* Full-bleed wrapper still okay; we just render ShopGrid inside */}
 <div className="relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw]">
-  <div
-    style={{
-      paddingLeft: "16px",
-      paddingRight: "16px",
-      // keep safe areas if you want
-      // paddingLeft: "max(env(safe-area-inset-left),16px)",
-      // paddingRight: "max(env(safe-area-inset-right),16px)",
-    }}
-  >
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-0 gap-y-4">
-      {visibleProducts.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </div>  
-
-    <div className="text-center mt-8">
-<Button
-  size="lg"
-  className="rounded-none px-8 py-6 border border-transparent bg-[#00C853] text-white hover:bg-white hover:text-black transition-colors"
-  onClick={() => setShowAll((v) => !v)}
->
-  {showAll ? "Show Less" : "Shop All"}
-</Button>
-
-    </div>
+  <div style={{ paddingLeft: "16px", paddingRight: "16px" }}>
+    <ShopGrid />
   </div>
 </div>
+
 </div>
 </section>
 

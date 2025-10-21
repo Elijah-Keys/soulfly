@@ -18,7 +18,9 @@ const About = () => {
         </div>
 
         {/* Foreground content */}
-        <div className="container px-4 py-12 relative z-10">
+  <div className="container px-4 py-12 pt-32 md:pt-0 relative z-10">
+
+
           <div className="max-w-3xl mx-auto">
             <h1 className="text-5xl font-bold mb-6">
               About{" "}

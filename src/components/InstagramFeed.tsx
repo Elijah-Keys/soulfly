@@ -2,12 +2,7 @@ import { Instagram } from "lucide-react";
 
 // Mock Instagram posts
 const mockPosts = [
-  { id: 1, image: "/src/assets/product-tee-blue.jpg" },
-  { id: 2, image: "/src/assets/product-tee-blue.jpg" },
-  { id: 3, image: "/src/assets/product-tee-blue.jpg" },
-  { id: 4, image: "/src/assets/product-tee-blue.jpg" },
-  { id: 5, image: "/src/assets/product-tee-blue.jpg" },
-  { id: 6, image: "/src/assets/product-tee-blue.jpg" },
+
 ];
 
 export const InstagramFeed = () => {

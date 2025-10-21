@@ -5,7 +5,7 @@ const Terms = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#E8E9DF] text-black">
       <Header />
-      <main className="flex-1 container px-4 pb-12 pt-[72px]">
+      <main className="flex-1 container px-4 pb-12 pt-32 md:pt-[72px]">
         <div className="max-w-3xl mx-auto prose prose-neutral">
           <h1>Terms of Service</h1>
           <p className="text-sm text-muted-foreground">Last updated: January 2024</p>

@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import { Product } from "@/lib/products";
 
 interface ProductCardProps { product: Product }
+import { API, resolveImg } from "@/lib/api";
+
+
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   return (
@@ -13,10 +16,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   {/* 3:2 + 48px */}
   <div aria-hidden style={{ paddingTop: "calc(66.666% + 72px)" }} />
   <img
-    src={product.images[0]}
-    alt={product.name}
-    className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.01]"
-  />
+  src={resolveImg(product.images?.[0]) || "/placeholder.png"}
+  alt={product.name}
+  className="absolute inset-0 w-full h-full object-contain"
+/>
+
   {!product.inStock && (
     <div className="absolute inset-0 bg-white/85 flex items-center justify-center">
       <span className="text-xs font-semibold tracking-wider">OUT OF STOCK</span>

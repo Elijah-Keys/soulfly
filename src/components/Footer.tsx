@@ -2,8 +2,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Instagram, Mail } from "lucide-react";
 
 const paymentMethods = [
-  "Visa", "Mastercard", "AmEx", "Discover", 
-  "Apple Pay", "Google Pay", "Shop Pay", "PayPal"
+  "Visa", "Mastercard", "AmEx", "Discover",
+  "Apple Pay", "Google Pay", "Shop Pay", "PayPal",
 ];
 
 export const Footer = () => {
@@ -13,6 +13,22 @@ export const Footer = () => {
   const scrollToShop = () => {
     const el = document.getElementById("shop");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // NEW: smooth scroll-to-top helper
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // NEW: footer navigation helper (prevents default, navigates, then scrolls top)
+  const go = (path: string) => (e: any) => {
+    e.preventDefault();
+    if (location.pathname === path) {
+      // same page route — just scroll
+      scrollToTop();
+    } else {
+      // navigate then scroll to top on next frame
+      navigate(path);
+      requestAnimationFrame(scrollToTop);
+    }
   };
 
   return (
@@ -31,16 +47,19 @@ export const Footer = () => {
               Never 2 fly 2 PRAY
             </p>
             <div className="flex gap-4">
+              {/* External links: just scroll current view to top; don't prevent default */}
               <a
                 href="https://instagram.com/444soulfly"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={scrollToTop}
                 className="text-muted-foreground hover:text-[#00C853] transition-colors"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
                 href="mailto:444soulfly.co@gmail.com"
+                onClick={scrollToTop}
                 className="text-muted-foreground hover:text-[#00C853] transition-colors"
               >
                 <Mail className="h-5 w-5" />
@@ -53,6 +72,7 @@ export const Footer = () => {
             <h4 className="font-semibold mb-4">Shop</h4>
             <ul className="space-y-2 text-sm">
               <li>
+                {/* KEEP EXACT BEHAVIOR for “All Products” */}
                 <Link
                   to="/#shop"
                   onClick={(e) => {
@@ -60,9 +80,9 @@ export const Footer = () => {
                       e.preventDefault();
                       scrollToShop();
                     } else {
-                      // ensure we land on home with #shop
                       e.preventDefault();
                       navigate("/#shop");
+                      requestAnimationFrame(scrollToShop);
                     }
                   }}
                   className="text-muted-foreground hover:text-foreground transition-colors"
@@ -70,8 +90,26 @@ export const Footer = () => {
                   All Products
                 </Link>
               </li>
-              <li><Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">About Us</Link></li>
-              <li><Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
+
+              {/* These now scroll to top */}
+              <li>
+                <Link
+                  to="/about"
+                  onClick={go("/about")}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  onClick={go("/contact")}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -79,11 +117,34 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/tracking" className="text-muted-foreground hover:text-foreground transition-colors">Order Tracking</Link></li>
-              <li><Link to="/policies/shipping" className="text-muted-foreground hover:text-foreground transition-colors">Shipping</Link></li>
-              <li><Link to="/policies/returns" className="text-muted-foreground hover:text-foreground transition-colors">Returns</Link></li>
-              <li><Link to="/policies/terms" className="text-muted-foreground hover:text-foreground transition-colors">Terms</Link></li>
-              <li><Link to="/policies/privacy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy</Link></li>
+              <li>
+                <Link
+                  to="/policies/shipping"
+                  onClick={go("/policies/shipping")}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Shipping
+                </Link>
+              </li>
+             
+              <li>
+                <Link
+                  to="/policies/terms"
+                  onClick={go("/policies/terms")}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Terms
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/policies/privacy"
+                  onClick={go("/policies/privacy")}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Privacy
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -93,9 +154,7 @@ export const Footer = () => {
             <p className="text-sm text-muted-foreground mb-4">
               444soulfly.co@gmail.com
             </p>
-            <p className="text-sm text-muted-foreground mb-2">
-              @444soulfly
-            </p>
+            <p className="text-sm text-muted-foreground mb-2">@444soulfly</p>
           </div>
         </div>
 

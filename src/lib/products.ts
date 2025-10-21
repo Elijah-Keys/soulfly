@@ -10,6 +10,7 @@ export interface Product {
   featured: boolean;
   inStock: boolean;
   inventory: Record<string, number>;
+   priceId?: string; // ✅ add this
 }
 
 // Seed data for demo
@@ -26,6 +27,7 @@ export const products: Product[] = [
     featured: true,
     inStock: true,
     inventory: { S: 12, M: 15, L: 20, XL: 10, XXL: 5 },
+      priceId: 'price_1SII1h7pABZIRK495XNnk7ZT', // ✅ your TEST Stripe Price
   },
   {
     id: '2',

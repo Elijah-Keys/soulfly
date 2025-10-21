@@ -28,6 +28,13 @@ export const Header = () => {
   // ---- SEARCH STATE ----
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState("");
+// --- mobile detection (client only) ---
+const [isMobile, setIsMobile] = useState(false);
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+  }
+}, []);
 
   // open with "/" key
   useEffect(() => {
@@ -85,12 +92,6 @@ export const Header = () => {
       >
         Contact
       </Link>
-      <Link
-        to="/tracking"
-        className="text-neutral-700 transition-colors hover:text-[#00C853]"
-      >
-        Order Tracking
-      </Link>
     </nav>
   );
 
@@ -141,12 +142,7 @@ export const Header = () => {
                       >
                         Contact
                       </Link>
-                      <Link
-                        to="/tracking"
-                        className="text-neutral-900 hover:text-[#00C853] transition-colors"
-                      >
-                        Order Tracking
-                      </Link>
+                    
                     </div>
                   </div>
                 </SheetContent>
@@ -203,7 +199,22 @@ export const Header = () => {
       </div>
 
       {/* SEARCH SHEET (top) */}
-      <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
+<Sheet
+  open={searchOpen}
+  onOpenChange={(o) => {
+    if (!o) {
+      // blur anything focused before closing to avoid iOS zoom/jump
+      const ae = document.activeElement as HTMLElement | null;
+      ae?.blur?.();
+      // small reflow to avoid white flash on some iOS versions
+      setTimeout(() => {
+        window.scrollTo(window.scrollX, window.scrollY);
+      }, 0);
+    }
+    setSearchOpen(o);
+  }}
+>
+
         {/* We don't need a trigger here; we control it with state */}
         <SheetContent
           side="top"
@@ -211,33 +222,23 @@ export const Header = () => {
         >
           <div className="mx-auto w-full max-w-2xl">
             {/* Header row */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-sm text-neutral-600">
-                Search products 
-              </div>
-              <button
-                onClick={() => setSearchOpen(false)}
-                className="p-2 rounded hover:bg-[#00C853]/10"
-                aria-label="Close search"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      <div className="flex items-center justify-between mb-4">
+  <div className="text-sm text-neutral-600">Search products</div>
+</div>
+
+
 
             {/* Input */}
-            <input
-              autoFocus
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Type a product name…"
-              className="w-full bg-transparent border-b border-neutral-300 focus:border-[#00C853] outline-none pb-3 text-lg"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && results[0]) {
-                  setSearchOpen(false);
-                  navigate(`/product/${results[0].id}`);
-                }
-              }}
-            />
+           <input
+  id="mobile-search-input"
+  autoFocus={!isMobile}              // no autofocus on mobile
+  inputMode="search"
+  value={q}
+  onChange={(e) => setQ(e.target.value)}
+  placeholder="Type a product name…"
+  className="w-full bg-transparent border-b border-neutral-300 focus:border-[#00C853] outline-none pb-3 text-base md:text-lg"
+/>
+
 
             {/* Results */}
             <div className="mt-4 divide-y divide-neutral-200">

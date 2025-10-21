@@ -3,10 +3,10 @@ import { Footer } from "@/components/Footer";
 
 const Shipping = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#E8E9DA]">
       <Header />
       <main className="flex-1 container px-4 py-12">
-        <div className="max-w-3xl mx-auto prose prose-neutral dark:prose-invert">
+        <div className="max-w-3xl mx-auto prose prose-neutral dark:prose-invert pt-20">
           <h1>Shipping Policy</h1>
           
           <h2>Processing Time</h2>
