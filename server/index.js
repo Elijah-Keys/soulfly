@@ -43,16 +43,15 @@ const allowed = [
 "http://localhost:5173", // optional for local dev
 ];
 
+import cors from "cors";
+
 app.use(cors({
-  origin(origin, cb) {
-    // allow no-origin requests (curl, server-to-server) and your allowed list
-    if (!origin || allowed.includes(origin)) return cb(null, true);
-    return cb(new Error("Not allowed by CORS"));
-  },
+  origin: ["https://soulfly444.com", "https://www.soulfly444.com"],
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
+  allowedHeaders: ["Content-Type","Authorization","Stripe-Signature"],
+  credentials: false
 }));
+
 
 // handle preflight for all routes
 app.options("*", cors());
