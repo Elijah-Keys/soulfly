@@ -505,16 +505,7 @@ try {
       .join(", ") || "—";
 
 // after you built: lineItems, priceIdOf(li), sizeByPrice
-await updateInventoryFromOrder(
-  (lineItems.data || []).map((li) => {
-    const pid = priceIdOf(li); // Stripe price id
-    return {
-      priceId: pid,                           // <-- use priceId to find local product
-      size: sizeByPrice[pid] || "",           // size from session metadata
-      quantity: li.quantity || 1,             // how many to subtract
-    };
-  })
-);
+
 
       // Admin dashboard link (works locally + in prod if you set SERVER_ORIGIN)
       const adminUrl =
@@ -1242,6 +1233,8 @@ app.patch("/api/admin/products/:id/inventory", requireAdmin, async (req, res) =>
   </body>
   </html>`);
   });
-
-
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, "0.0.0.0", () =>
+  console.log(`API listening on http://0.0.0.0:${PORT}`)
+);
   app.listen(3001, "0.0.0.0", () => console.log("API on http://0.0.0.0:3001"));
