@@ -7,7 +7,7 @@
   import fs from "fs/promises";
   import path from "path";
 import promoRoutes from "./routes/promo.js";
-
+import cors from "cors";
 
   console.log(
     "Shippo token mode:",
@@ -35,7 +35,28 @@ import promoRoutes from "./routes/promo.js";
   }
 
   const app = express();
-  app.use(cors());
+
+// allow only your sites (add localhost for dev if you want)
+const allowed = [
+  "https://soulfly444.com",
+  "https://www.soulfly444.com",
+  // "http://localhost:5173", // optional for local dev
+];
+
+app.use(cors({
+  origin(origin, cb) {
+    // allow no-origin requests (curl, server-to-server) and your allowed list
+    if (!origin || allowed.includes(origin)) return cb(null, true);
+    return cb(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+
+// handle preflight for all routes
+app.options("*", cors());
+
   app.get("/health", (_req, res) => res.send("ok"));
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
