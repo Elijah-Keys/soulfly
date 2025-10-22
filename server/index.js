@@ -7,7 +7,7 @@
   import fs from "fs/promises";
   import path from "path";
 import promoRoutes from "./routes/promo.js";
-import cors from "cors";
+
 
   console.log(
     "Shippo token mode:",
@@ -40,7 +40,7 @@ import cors from "cors";
 const allowed = [
   "https://soulfly444.com",
   "https://www.soulfly444.com",
-  // "http://localhost:5173", // optional for local dev
+"http://localhost:5173", // optional for local dev
 ];
 
 app.use(cors({
