@@ -492,6 +492,8 @@ if (hasShippo && hasToAddress && hasFromAddress) {
           await writeOrders(orders);
 
         console.log("✔️ Order stored:", session.id, "Label:", label_url, "Tracking:", tracking_number);
+const productsForInv = await readProducts();
+const localIdByPrice = Object.fromEntries(productsForInv.map(p => [String(p.priceId), String(p.id)]));
 
 try {
   const itemsForInv = (lineItems.data || []).map((li) => {
