@@ -6,8 +6,8 @@
   import multer from "multer";
   import fs from "fs/promises";
   import path from "path";
-import promoRoutes from "../routes/promo.js";
-import checkoutRoutes from "../routes/checkout.js";
+import promoRoutes from "./routes/promo.js";
+
 
   console.log(
     "Shippo token mode:",
@@ -477,8 +477,7 @@ try {
   const itemsForInv = (lineItems.data || []).map((li) => {
     const prc = priceIdOf(li); // Stripe price id
     return {
-      priceId: prc,                  // primary join key
-      id: localIdByPrice[prc] || "", // local product id as fallback
+      priceId: prc,                  // primary join ke
       size: sizeByPrice[prc] || "",
       quantity: li.quantity || 1,
     };
@@ -1234,7 +1233,4 @@ app.patch("/api/admin/products/:id/inventory", requireAdmin, async (req, res) =>
   </html>`);
   });
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, "0.0.0.0", () =>
-  console.log(`API listening on http://0.0.0.0:${PORT}`)
-);
-  app.listen(3001, "0.0.0.0", () => console.log("API on http://0.0.0.0:3001"));
+ app.listen(PORT, () => console.log(`API listening on :${PORT}`));
