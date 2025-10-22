@@ -43,7 +43,6 @@ const allowed = [
 "http://localhost:5173", // optional for local dev
 ];
 
-import cors from "cors";
 
 app.use(cors({
   origin: ["https://soulfly444.com", "https://www.soulfly444.com"],
