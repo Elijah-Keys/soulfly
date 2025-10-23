@@ -34,18 +34,67 @@ import promoRoutes from "./routes/promo.js";
     );
   }
 
-  const app = express();
+const app = express();
+
+// ----- CORS (strict allowlist, robust preflight) -----
+const ALLOWED_ORIGINS = [
+  "https://soulfly444.com",
+  "https://www.soulfly444.com",
+  "http://localhost:5173",
+];
+
 const CORS_OPTIONS = {
-  origin: [
-    "https://soulfly444.com",
-    "https://www.soulfly444.com",
-    "http://localhost:5173"
+  origin(origin, cb) {
+    // allow same-origin/no-origin tools (curl/postman) gracefully
+    if (!origin) return cb(null, true);
+    return cb(null, ALLOWED_ORIGINS.includes(origin));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Accept",
+    "X-Admin-Key",
+    "x-admin-key",
+    "Authorization",
+    "Stripe-Signature",
   ],
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  credentials: false
+  exposedHeaders: ["Content-Type", "Content-Length", "ETag"],
+  credentials: false,
+  maxAge: 600,
 };
+
 app.use(cors(CORS_OPTIONS));
+// explicit preflight responder (some proxies strip headers unless we answer explicitly)
 app.options("*", cors(CORS_OPTIONS));
+
+// ---------- Route-local CORS shim just for uploads ----------
+function withUploadCORS(req, res, next) {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+
+    // ensure caches/proxies vary the response per origin
+    const prevVary = res.getHeader("Vary");
+    res.setHeader("Vary", prevVary ? `${prevVary}, Origin` : "Origin");
+
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    // reflect requested headers if present; fallback to a safe default
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      req.get("Access-Control-Request-Headers") ||
+        "Content-Type,Accept,X-Admin-Key,x-admin-key,Authorization,Stripe-Signature"
+    );
+    res.setHeader("Access-Control-Max-Age", "600");
+  }
+
+  // Short-circuit preflight for this route
+  if (req.method === "OPTIONS") return res.status(204).end();
+  next();
+}
+
+// Handle preflight explicitly on the upload path (before the POST)
+app.options("/api/admin/upload", withUploadCORS);
+
 
 
 
@@ -981,21 +1030,32 @@ if (promoId) {
     const m = name.match(/\.[a-zA-Z0-9]+$/);
     return m ? m[0].toLowerCase() : ".jpg";
   }
-  app.post("/api/admin/upload", requireAdmin, upload.single("file"), async (req, res) => {
-    try {
-      if (!req.file) return res.status(400).json({ error: "no file" });
-      const ext = extensionOf(req.file.originalname);
-      const base = slugify(req.file.originalname.replace(/\.[^.]+$/, "")) || "image";
-      const filename = `${base}-${Date.now()}${ext}`;
-      const finalPath = path.join(process.cwd(), "public", "images", filename);
-      await fs.mkdir(path.dirname(finalPath), { recursive: true });
-      await fs.rename(req.file.path, finalPath);
-      res.json({ url: `/images/${filename}` });
-    } catch (e) {
-      console.error("upload failed:", e);
-      res.status(500).json({ error: "upload failed" });
+app.post("/api/admin/upload", withUploadCORS, requireAdmin, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "no file" });
+
+    const ext = extensionOf(req.file.originalname);
+    const base = slugify(req.file.originalname.replace(/\.[^.]+$/, "")) || "image";
+    const filename = `${base}-${Date.now()}${ext}`;
+    const finalPath = path.join(process.cwd(), "public", "images", filename);
+    await fs.mkdir(path.dirname(finalPath), { recursive: true });
+    await fs.rename(req.file.path, finalPath);
+
+    // also expose CORS on the response (for good measure)
+    const origin = req.headers.origin;
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+      const prevVary = res.getHeader("Vary");
+      res.setHeader("Vary", prevVary ? `${prevVary}, Origin` : "Origin");
+      res.setHeader("Access-Control-Allow-Origin", origin);
     }
-  });
+
+    res.json({ url: `/images/${filename}` });
+  } catch (e) {
+    console.error("upload failed:", e);
+    res.status(500).json({ error: "upload failed" });
+  }
+});
+
 
   /* Admin products */
 // --- Admin products (CREATE) ---
