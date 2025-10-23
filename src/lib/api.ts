@@ -1,15 +1,12 @@
 // src/lib/api.ts
-// src/lib/api.ts
-const HOST =
-  typeof window !== "undefined" ? window.location.hostname : "localhost";
+// Hardcoded API base: your Render backend
+export const API = "https://api.soulfly444.com";
 
-export const API =
-  import.meta.env.VITE_API_URL || `http://${HOST}:3001`;
-
+// Turn relative image paths (e.g. "/images/foo.jpg") into full URLs
 export const resolveImg = (u?: string) =>
-  !u ? "" : u.startsWith("http") ? u : `${API}${u.startsWith("/") ? "" : "/"}${u}`;
+  !u ? "" : /^https?:\/\//.test(u) ? u : `${API}${u.startsWith("/") ? "" : "/"}${u}`;
 
-
+// ---------- Types ----------
 export type ApiProduct = {
   id?: string;
   slug?: string;
@@ -38,10 +35,21 @@ export type UIProduct = {
   category?: string;
 };
 
+// ---------- Mappers ----------
 export function toUIProduct(p: ApiProduct): UIProduct {
   const id = (p.slug || p.id || "").toString();
-  const images = Array.isArray(p.images) && p.images.length ? p.images : (p.image ? [p.image] : []);
+  const images =
+    Array.isArray(p.images) && p.images.length ? p.images : p.image ? [p.image] : [];
   const price = typeof p.unit_amount === "number" ? p.unit_amount / 100 : 0;
+
+  const inventory = p.inventory || {};
+  const sizes =
+    (Array.isArray(p.sizes) && p.sizes.length ? p.sizes : Object.keys(inventory)) || [];
+  const total = Object.values(inventory).reduce(
+    (sum, n) => sum + (typeof n === "number" ? n : 0),
+    0
+  );
+  const inStock = sizes.length ? total > 0 : true;
 
   return {
     id,
@@ -50,13 +58,14 @@ export function toUIProduct(p: ApiProduct): UIProduct {
     images,
     price,
     priceId: p.priceId,
-    sizes: Array.isArray(p.sizes) ? p.sizes : [],
-    inventory: p.inventory || {},
-    inStock: true,
+    sizes,
+    inventory,
+    inStock,
     category: p.category,
   };
 }
 
+// ---------- API calls ----------
 export async function fetchProducts(): Promise<UIProduct[]> {
   const res = await fetch(`${API}/api/products`);
   if (!res.ok) throw new Error(`GET /api/products failed (${res.status})`);

@@ -31,6 +31,14 @@ export default function Admin() {
   // Auth
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
+// Restore saved admin key so we keep sending it after refresh/navigation
+useEffect(() => {
+  const k = sessionStorage.getItem("adminKey");
+  if (k) {
+    setPassword(k);
+    setAuthenticated(true);
+  }
+}, []);
 
   // Data
   const [items, setItems] = useState<Product[]>([]);
@@ -94,19 +102,36 @@ const [editInv, setEditInv] = useState<Record<string, number>>({});
 
 
   const location = useLocation();
+async function uploadImage(file: File) {
+  const fd = new FormData();
+  fd.append("file", file);
 
-  async function uploadImage(file: File) {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch(`${API}/api/admin/upload`, {
-      method: "POST",
-      headers: { "x-admin-key": password },
-      body: fd,
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.error || "Upload failed");
-    return String(data.url); // e.g. "/images/foo.webp"
+  const res = await fetch(`${API}/api/admin/upload`, {
+    method: "POST",
+    headers: {
+      "x-admin-key": password,
+      "Accept": "application/json",
+    },
+    body: fd,
+  });
+
+  // Read raw (server might send HTML on errors)
+  const raw = await res.text();
+  let data: any = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch {}
+
+  if (!res.ok) {
+    // Friendlier messages for common cases
+    if (res.status === 401) throw new Error("Unauthorized (bad admin key). Re-enter the key.");
+    if (res.status === 413) throw new Error("File too large (server limit ~10MB). Try a smaller image.");
+    throw new Error(data?.error || `Upload failed (HTTP ${res.status})`);
   }
+
+  const url = data?.url;
+  if (!url) throw new Error("Upload response missing URL");
+  return String(url); // e.g. "/images/foo.webp"
+}
+
 
   function removeImageAt(idx: number) {
     setUploadedUrls((prev) => prev.filter((_, i) => i !== idx));
@@ -151,15 +176,17 @@ const [editInv, setEditInv] = useState<Record<string, number>>({});
     if (authenticated) load();
   }, [authenticated]);
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    if (password && ENV_ADMIN_KEY && password === ENV_ADMIN_KEY) {
-      setAuthenticated(true);
-      toast({ title: "Welcome", description: "Admin unlocked" });
-    } else {
-      toast({ title: "Incorrect admin key", variant: "destructive" });
-    }
+function handleLogin(e: React.FormEvent) {
+  e.preventDefault();
+  if (password && ENV_ADMIN_KEY && password === ENV_ADMIN_KEY) {
+    setAuthenticated(true);
+    sessionStorage.setItem("adminKey", password); // <-- persist
+    toast({ title: "Welcome", description: "Admin unlocked" });
+  } else {
+    toast({ title: "Incorrect admin key", variant: "destructive" });
   }
+}
+
 
   async function createProduct(e: React.FormEvent) {
     e.preventDefault();
@@ -677,84 +704,90 @@ await load();
               </tr>
             </thead>
             <tbody>
-              {items.map((p) => {
-                const stockSummary =
-                  p.inventory && Object.keys(p.inventory).length
-                    ? Object.entries(p.inventory)
-                        .map(([s, q]) => `${s}:${q}`)
-                        .join(" ")
-                    : "—";
-                const isEditing = editingStockId === p.id;
+          {items.map((p) => {
+  const stockSummary =
+    p.inventory && Object.keys(p.inventory).length
+      ? Object.entries(p.inventory).map(([s, q]) => `${s}:${q}`).join(" ")
+      : "—";
 
-                return (
-                  <tr key={p.id} className="border-b align-top">
-                    <td className="p-3">
-                      <div className="font-medium">{p.name}</div>
+  const isEditing = editingStockId === p.id;
 
+  return (
+    <tr key={p.id} className="border-b align-top">
+      {/* Product */}
+      <td className="p-3">
+        <div className="font-medium">{p.name}</div>
+      </td>
 
-                    </td>
-                    <td className="p-3">${p.price}</td>
-                    <td className="p-3">{p.id}</td>
-                   <td className="p-3">
-                    <td className="p-3">{p.priceId || "—"}</td>
+      {/* Price */}
+      <td className="p-3">${p.price}</td>
 
-<td className="p-3 text-right">
-  <Button
-    size="sm"
-    variant="destructive"
-    onClick={() => removeProduct(p.id)}
-    disabled={deletingId === p.id}
-  >
-    <Trash2 className="h-4 w-4 mr-1" />
-    {deletingId === p.id ? "Deleting…" : "Delete"}
-  </Button>
-</td>
+      {/* ID */}
+      <td className="p-3">{p.id}</td>
 
-  {!isEditing ? (
-    <>
-      <div className="text-sm">{stockSummary}</div>
-      <Button
-        size="sm"
-        variant="ghost"
-        className="px-2 mt-1"
-        onClick={() => startEditStock(p)}
-      >
-        <Edit3 className="h-4 w-4 mr-1" />
-        Edit stock
-      </Button>
-    </>
-  ) : (
-    <div className="mt-1">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {editSizes.map((s) => (
-          <div key={s} className="flex items-center gap-2">
-            <span className="w-8 text-sm">{s}</span>
-            <Input
-              type="number"
-              min={0}
-              inputMode="numeric"
-              value={editInv[s] ?? 0}
-              onChange={(e) =>
-                setEditInv((m) => ({
-                  ...m,
-                  [s]: Math.max(0, parseInt(e.target.value || "0", 10)),
-                }))
-              }
-            />
+      {/* Stock (inline editor or summary) */}
+      <td className="p-3">
+        {!isEditing ? (
+          <>
+            <div className="text-sm">{stockSummary}</div>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="px-2 mt-1"
+              onClick={() => startEditStock(p)}
+            >
+              <Edit3 className="h-4 w-4 mr-1" />
+              Edit stock
+            </Button>
+          </>
+        ) : (
+          <div className="mt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {editSizes.map((s) => (
+                <div key={s} className="flex items-center gap-2">
+                  <span className="w-8 text-sm">{s}</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    value={editInv[s] ?? 0}
+                    onChange={(e) =>
+                      setEditInv((m) => ({
+                        ...m,
+                        [s]: Math.max(0, parseInt(e.target.value || "0", 10)),
+                      }))
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 flex gap-2">
+              <Button size="sm" onClick={saveEditStock}>Save</Button>
+              <Button size="sm" variant="outline" onClick={cancelEditStock}>Cancel</Button>
+            </div>
           </div>
-        ))}
-      </div>
-      <div className="mt-2 flex gap-2">
-        <Button size="sm" onClick={saveEditStock}>Save</Button>
-        <Button size="sm" variant="outline" onClick={cancelEditStock}>Cancel</Button>
-      </div>
-    </div>
-  )}
-</td>
+        )}
+      </td>
 
-                  </tr>
-                );
-              })}
+      {/* Stripe priceId */}
+      <td className="p-3">{p.priceId || "—"}</td>
+
+      {/* Actions */}
+      <td className="p-3 text-right">
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => removeProduct(p.id)}
+          disabled={deletingId === p.id}
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          {deletingId === p.id ? "Deleting…" : "Delete"}
+        </Button>
+      </td>
+    </tr>
+  );
+})}
+
               {items.length === 0 && !loading && (
                 <tr>
                   <td className="p-4 text-sm text-neutral-500" colSpan={6}>
