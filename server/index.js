@@ -41,6 +41,7 @@ const ALLOWED_ORIGINS = [
   "https://soulfly444.com",
   "https://www.soulfly444.com",
   "http://localhost:5173",
+  "https://soulfly.vercel.app",
 ];
 
 const CORS_OPTIONS = {
