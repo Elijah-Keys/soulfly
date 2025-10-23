@@ -35,7 +35,6 @@ import promoRoutes from "./routes/promo.js";
   }
 
   const app = express();
-// put near the top, right after `const app = express();`
 const CORS_OPTIONS = {
   origin: [
     "https://soulfly444.com",
@@ -43,18 +42,11 @@ const CORS_OPTIONS = {
     "http://localhost:5173"
   ],
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Stripe-Signature",
-    "x-admin-key",
-    "X-Admin-Key",
-    "Accept"
-  ],
   credentials: false
 };
 app.use(cors(CORS_OPTIONS));
 app.options("*", cors(CORS_OPTIONS));
+
 
 
 // allow only your sites (add localhost for dev if you want)
