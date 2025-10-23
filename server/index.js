@@ -40,7 +40,7 @@ const CORS_OPTIONS = {
   origin: [
     "https://soulfly444.com",
     "https://www.soulfly444.com",
-    "http://localhost:5173"   // dev
+    "http://localhost:5173"
   ],
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   allowedHeaders: [
@@ -48,12 +48,13 @@ const CORS_OPTIONS = {
     "Authorization",
     "Stripe-Signature",
     "x-admin-key",
-    "X-Admin-Key"
+    "X-Admin-Key",
+    "Accept"
   ],
   credentials: false
 };
-
 app.use(cors(CORS_OPTIONS));
+app.options("*", cors(CORS_OPTIONS));
 
 
 // allow only your sites (add localhost for dev if you want)
