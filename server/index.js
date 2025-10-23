@@ -44,12 +44,22 @@ const allowed = [
 ];
 
 
-app.use(cors({
+const CORS_OPTIONS = {
   origin: ["https://soulfly444.com", "https://www.soulfly444.com"],
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization","Stripe-Signature"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Stripe-Signature",
+    "x-admin-key"      // ← add this
+  ],
   credentials: false
-}));
+};
+
+app.use(cors(CORS_OPTIONS));
+// handle preflight with the SAME options
+app.options("*", cors(CORS_OPTIONS));
+
 
 
 // handle preflight for all routes
