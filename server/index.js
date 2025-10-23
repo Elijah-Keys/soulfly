@@ -109,7 +109,13 @@ app.options("/api/admin/upload", withUploadCORS);
 
   app.get("/health", (_req, res) => res.send("ok"));
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
+// --- Stripe (safe init: won't crash if key missing) ---
+const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || "";
+if (!STRIPE_KEY) {
+  console.warn("⚠️ STRIPE_SECRET_KEY missing — Stripe routes will 400 until you set it.");
+}
+const stripe = STRIPE_KEY ? new Stripe(STRIPE_KEY, { apiVersion: "2024-06-20" }) : null;
+
 
   /* -------------------------------------------
     Shippo helpers (Node 18+ for global fetch)
@@ -234,17 +240,20 @@ function sameAddr(a, b) {
 
   /* 1) Webhook first, raw body (no JSON parser here) */
   /* 1) Webhook first, raw body (no JSON parser here) */
-  app.post(
-    "/api/stripe-webhook",
-    bodyParser.raw({ type: "application/json" }),
-    async (req, res) => {
-      try {
-        const sig = req.headers["stripe-signature"];
-        const event = stripe.webhooks.constructEvent(
-          req.body,
-          sig,
-          process.env.STRIPE_WEBHOOK_SECRET
-        );
+app.post(
+  "/api/stripe-webhook",
+  bodyParser.raw({ type: "application/json" }),
+  async (req, res) => {
+    // ✅ don't crash if STRIPE_SECRET_KEY isn't set
+    if (!stripe) return res.status(200).send("stripe disabled");
+
+    try {
+      const sig = req.headers["stripe-signature"];
+      const event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
   // Re-fetch the session to ensure all fields (and PI) are fresh
 
 
@@ -686,6 +695,7 @@ app.use("/promo", promoRoutes);
   /* Create Stripe Product + default Price (optional admin helper) */
   app.post("/api/listings", async (req, res) => {
     try {
+        if (!stripe) return res.status(500).json({ error: "Stripe not configured" });
       if (process.env.ADMIN_TOKEN) {
         const auth = req.headers.authorization || "";
         if (auth !== `Bearer ${process.env.ADMIN_TOKEN}`) {
@@ -747,6 +757,8 @@ function hasFullAddress(s = {}) {
   /* Checkout */
   app.post("/api/checkout", async (req, res) => {
     try {
+       if (!stripe) return res.status(500).json({ error: "Stripe not configured" });
+
 const { items, shipTo, promoId } = req.body || {};
 if (!hasFullAddress(shipTo)) {
   return res.status(400).json({ error: "Shipping address required" });
