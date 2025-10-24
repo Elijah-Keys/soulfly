@@ -691,113 +691,129 @@ await load();
         )}
 
         {/* Table */}
-        <div className="bg-card border rounded-4 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted/50 border-b">
-              <tr>
-                <th className="text-left p-3">Product</th>
-                <th className="text-left p-3">Price</th>
-                <th className="text-left p-3">ID</th>
-                <th className="text-left p-3">Stock</th>
-                <th className="text-left p-3">Stripe priceId</th>
-                <th className="text-right p-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-          {items.map((p) => {
-  const stockSummary =
-    p.inventory && Object.keys(p.inventory).length
-      ? Object.entries(p.inventory).map(([s, q]) => `${s}:${q}`).join(" ")
-      : "—";
+     /* Table */
+<div className="bg-card border rounded-4 overflow-hidden">
+  <div className="-mx-4 md:mx-0 overflow-x-auto overscroll-x-contain touch-pan-x">
+    <table className="min-w-[920px] w-full">
+      <thead className="bg-muted/50 border-b">
+        <tr>
+          <th className="text-left p-3 whitespace-nowrap">Product</th>
+          <th className="text-left p-3 whitespace-nowrap">Price</th>
+          <th className="text-left p-3 whitespace-nowrap">ID</th>
+          <th className="text-left p-3 whitespace-nowrap">Stock</th>
+          <th className="text-left p-3 whitespace-nowrap">Stripe priceId</th>
+          {/* sticky on small screens so the Delete button is always reachable */}
+          <th className="text-right p-3 whitespace-nowrap sticky right-0 bg-muted/50 z-10 md:static md:bg-muted/50">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {items.map((p) => {
+          const stockSummary =
+            p.inventory && Object.keys(p.inventory).length
+              ? Object.entries(p.inventory)
+                  .map(([s, q]) => `${s}:${q}`)
+                  .join(" ")
+              : "—";
 
-  const isEditing = editingStockId === p.id;
+          const isEditing = editingStockId === p.id;
 
-  return (
-    <tr key={p.id} className="border-b align-top">
-      {/* Product */}
-      <td className="p-3">
-        <div className="font-medium">{p.name}</div>
-      </td>
+          return (
+            <tr key={p.id} className="border-b align-top">
+              {/* Product */}
+              <td className="p-3 whitespace-nowrap">
+                <div className="font-medium">{p.name}</div>
+              </td>
 
-      {/* Price */}
-      <td className="p-3">${p.price}</td>
+              {/* Price */}
+              <td className="p-3 whitespace-nowrap">${p.price}</td>
 
-      {/* ID */}
-      <td className="p-3">{p.id}</td>
+              {/* ID */}
+              <td className="p-3 whitespace-nowrap">{p.id}</td>
 
-      {/* Stock (inline editor or summary) */}
-      <td className="p-3">
-        {!isEditing ? (
-          <>
-            <div className="text-sm">{stockSummary}</div>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="px-2 mt-1"
-              onClick={() => startEditStock(p)}
-            >
-              <Edit3 className="h-4 w-4 mr-1" />
-              Edit stock
-            </Button>
-          </>
-        ) : (
-          <div className="mt-1">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {editSizes.map((s) => (
-                <div key={s} className="flex items-center gap-2">
-                  <span className="w-8 text-sm">{s}</span>
-                  <Input
-                    type="number"
-                    min={0}
-                    inputMode="numeric"
-                    value={editInv[s] ?? 0}
-                    onChange={(e) =>
-                      setEditInv((m) => ({
-                        ...m,
-                        [s]: Math.max(0, parseInt(e.target.value || "0", 10)),
-                      }))
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 flex gap-2">
-              <Button size="sm" onClick={saveEditStock}>Save</Button>
-              <Button size="sm" variant="outline" onClick={cancelEditStock}>Cancel</Button>
-            </div>
-          </div>
+              {/* Stock (inline editor or summary) */}
+              <td className="p-3">
+                {!isEditing ? (
+                  <>
+                    <div className="text-sm">{stockSummary}</div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="px-2 mt-1"
+                      onClick={() => startEditStock(p)}
+                    >
+                      <Edit3 className="h-4 w-4 mr-1" />
+                      Edit stock
+                    </Button>
+                  </>
+                ) : (
+                  <div className="mt-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {editSizes.map((s) => (
+                        <div key={s} className="flex items-center gap-2">
+                          <span className="w-8 text-sm">{s}</span>
+                          <Input
+                            type="number"
+                            min={0}
+                            inputMode="numeric"
+                            value={editInv[s] ?? 0}
+                            onChange={(e) =>
+                              setEditInv((m) => ({
+                                ...m,
+                                [s]: Math.max(
+                                  0,
+                                  parseInt(e.target.value || "0", 10)
+                                ),
+                              }))
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <Button size="sm" onClick={saveEditStock}>
+                        Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEditStock}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </td>
+
+              {/* Stripe priceId */}
+              <td className="p-3 whitespace-nowrap">{p.priceId || "—"}</td>
+
+              {/* Actions (sticky on mobile) */}
+              <td className="p-3 text-right whitespace-nowrap sticky right-0 bg-card z-10 md:static md:bg-transparent">
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => removeProduct(p.id)}
+                  disabled={deletingId === p.id}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  {deletingId === p.id ? "Deleting…" : "Delete"}
+                </Button>
+              </td>
+            </tr>
+          );
+        })}
+
+        {items.length === 0 && !loading && (
+          <tr>
+            <td className="p-4 text-sm text-neutral-500" colSpan={6}>
+              No products yet.
+            </td>
+          </tr>
         )}
-      </td>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-      {/* Stripe priceId */}
-      <td className="p-3">{p.priceId || "—"}</td>
-
-      {/* Actions */}
-      <td className="p-3 text-right">
-        <Button
-          size="sm"
-          variant="destructive"
-          onClick={() => removeProduct(p.id)}
-          disabled={deletingId === p.id}
-        >
-          <Trash2 className="h-4 w-4 mr-1" />
-          {deletingId === p.id ? "Deleting…" : "Delete"}
-        </Button>
-      </td>
-    </tr>
-  );
-})}
-
-              {items.length === 0 && !loading && (
-                <tr>
-                  <td className="p-4 text-sm text-neutral-500" colSpan={6}>
-                    No products yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
       </main>
       <Footer />
     </div>
