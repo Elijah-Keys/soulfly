@@ -670,6 +670,66 @@ async function updateInventoryFromOrder(items = []) {
   /* 2) JSON parser for normal routes */
   app.use(express.json());
   
+  // --- Admin: buy a Shippo label from a rate_id ---
+app.post("/api/admin/shippo/buy", requireAdmin, express.json(), async (req, res) => {
+  try {
+    const { rate_id } = req.body || {};
+    if (!rate_id) return res.status(400).json({ error: "rate_id required" });
+    if (!process.env.SHIPPO_API_TOKEN) {
+      return res.status(400).json({ error: "SHIPPO_API_TOKEN not set on server" });
+    }
+
+    // Create transaction (buy label)
+    const trxResp = await fetch("https://api.goshippo.com/transactions/", {
+      method: "POST",
+      headers: {
+        "Authorization": `ShippoToken ${process.env.SHIPPO_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rate: rate_id, label_file_type: "PDF" }),
+    });
+
+    if (!trxResp.ok) {
+      const body = await trxResp.text();
+      return res.status(trxResp.status).json({
+        error: `Shippo buy failed (${trxResp.status})`,
+        body: body.slice(0, 500),
+      });
+    }
+
+    let trx = await trxResp.json();
+
+    // Poll until done if queued
+    if (trx.status === "QUEUED" || trx.status === "WAITING") {
+      const id = trx.object_id;
+      for (let i = 0; i < 15; i++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const chk = await fetch(`https://api.goshippo.com/transactions/${id}`, {
+          headers: { "Authorization": `ShippoToken ${process.env.SHIPPO_API_TOKEN}` },
+        });
+        if (!chk.ok) break;
+        trx = await chk.json();
+        if (trx.status === "SUCCESS" || trx.status === "ERROR") break;
+      }
+    }
+
+    if (trx.status !== "SUCCESS") {
+      const msg = trx?.messages?.[0]?.text || trx.status || "Unknown error";
+      return res.status(502).json({ error: `Shippo transaction: ${msg}`, status: trx.status });
+    }
+
+    return res.json({
+      label_url: trx.label_url,
+      tracking_number: trx.tracking_number,
+      carrier: trx.rate?.carrier || null,
+      service: trx.rate?.service || null,
+    });
+  } catch (e) {
+    console.error("shippo buy error:", e);
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
   app.use(express.static(path.join(process.cwd(), "public")));
   app.get("/api/test-telegram", async (_req, res) => {
     try {
