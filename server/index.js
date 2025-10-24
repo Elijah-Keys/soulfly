@@ -9,6 +9,7 @@
 import promoRoutes from "./routes/promo.js";
 
 
+
   console.log(
     "Shippo token mode:",
     process.env.SHIPPO_API_TOKEN?.startsWith("shippo_test_") ? "TEST" : "LIVE"
@@ -19,7 +20,7 @@ import promoRoutes from "./routes/promo.js";
     .split(",")
     .map(s => s.trim())
     .filter(Boolean);
-
+const SHIPPO_BUY_AUTO = process.env.SHIPPO_BUY_AUTO === "true";
   async function notifyAdmins(message) {
     if (!TELEGRAM_TOKEN || TELEGRAM_RECIPIENTS.length === 0) return;
     const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
@@ -484,7 +485,8 @@ if (addressChanged) {
   addressChanged
 });
 
-if (hasShippo && hasToAddress && hasFromAddress) {
+if (hasShippo && hasToAddress && hasFromAddress && SHIPPO_BUY_AUTO && !addressChanged) {
+
     try {
       lastShipment = await createShippoShipment(to_address, from_address, parcel);
 
@@ -682,6 +684,54 @@ app.use("/promo", promoRoutes);
   const PRODUCTS = {
     "soulfly-tshirt": { priceId: "price_1SHyHA7pABZIRK49bSm8anoy" }
   };
+// --- Admin: Shippo quote (no charge) ---
+app.post("/api/admin/shippo/quote", requireAdmin, async (req, res) => {
+  try {
+    if (!process.env.SHIPPO_API_TOKEN) {
+      return res.status(400).json({ error: "SHIPPO_API_TOKEN not set" });
+    }
+    const to = req.body?.to || {
+      name: "Test Receiver",
+      street1: "1 Infinite Loop",
+      city: "Cupertino",
+      state: "CA",
+      zip: "95014",
+      country: "US",
+      phone: "",
+      email: ""
+    };
+    const from = {
+      name: process.env.SHIP_FROM_NAME || "",
+      street1: process.env.SHIP_FROM_STREET1 || "",
+      street2: process.env.SHIP_FROM_STREET2 || "",
+      city: process.env.SHIP_FROM_CITY || "",
+      state: process.env.SHIP_FROM_STATE || "",
+      zip: process.env.SHIP_FROM_ZIP || "",
+      country: process.env.SHIP_FROM_COUNTRY || "US",
+      phone: process.env.SHIP_FROM_PHONE || "",
+      email: process.env.SHIP_FROM_EMAIL || "",
+    };
+    const parcel = req.body?.parcel || {
+      weight: Number(process.env.DEFAULT_PARCEL_OZ || 16),
+      length: Number(process.env.DEFAULT_PARCEL_L || 10),
+      width:  Number(process.env.DEFAULT_PARCEL_W || 8),
+      height: Number(process.env.DEFAULT_PARCEL_H || 2),
+    };
+
+    const quote = await createShippoShipment(to, from, parcel);
+    const rates = Array.isArray(quote.rates) ? quote.rates : [];
+    const mapped = rates.map(r => ({
+      rate_id: r.object_id,
+      carrier: r.provider || r.carrier || null,
+      service: (r.servicelevel && r.servicelevel.name) || r.service || null,
+      amount: r.amount,
+      estimated_days: r.estimated_days ?? null
+    }));
+    res.json({ count: mapped.length, rates: mapped.slice(0, 10) });
+  } catch (e) {
+    res.status(400).json({ error: String(e?.message || e) });
+  }
+});
 
   /* Utility */
   function slugify(s) {
